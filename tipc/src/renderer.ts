@@ -1,3 +1,4 @@
+import "@tybys/electron-ipc-handle-invoke/renderer"
 import { IpcRenderer, IpcRendererEvent } from "electron"
 import type {
   ClientFromRouter,

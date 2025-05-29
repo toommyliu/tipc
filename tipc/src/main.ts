@@ -1,8 +1,8 @@
-import crypto from "node:crypto"
+import "@tybys/electron-ipc-handle-invoke/main"
+import { v4 as uuid } from "@lukeed/uuid"
 import { WebContents, ipcMain } from "electron"
 import { RendererHandlers, RendererHandlersCaller, RouterType } from "./types"
 import { tipc } from "./tipc"
-
 export { tipc }
 
 export const registerIpcMain = (router: RouterType) => {
@@ -22,7 +22,7 @@ export const getRendererHandlers = <T extends RendererHandlers>(
         send: (...args: any[]) => contents.send(prop.toString(), ...args),
 
         invoke: async (...args: any[]) => {
-          const id = crypto.randomUUID()
+          const id = uuid()
 
           return new Promise((resolve, reject) => {
             ipcMain.once(id, (_, { error, result }) => {
