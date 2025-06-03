@@ -1,6 +1,5 @@
 node_modules
 
-dist
 out
 types
 .DS_Store
