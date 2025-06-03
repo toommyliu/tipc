@@ -1,12 +1,39 @@
 import "@tybys/electron-ipc-handle-invoke/main"
 import { v4 as uuid } from "@lukeed/uuid"
 import { WebContents, ipcMain } from "electron"
-import { RendererHandlers, RendererHandlersCaller, RouterType } from "./types"
+import {
+  RendererHandlers,
+  RendererHandlersCaller,
+  RouterType,
+  ActionFunction,
+} from "./types"
 import { tipc } from "./tipc"
 export { tipc }
 
+const flattenRouter = (
+  router: RouterType,
+  prefix = ""
+): Record<string, { action: ActionFunction }> => {
+  const flattened: Record<string, { action: ActionFunction }> = {}
+
+  for (const [key, value] of Object.entries(router)) {
+    const fullKey = prefix ? `${prefix}.${key}` : key
+
+    if (value && typeof value === "object" && "action" in value) {
+      flattened[fullKey] = value as { action: ActionFunction }
+    } else {
+      // Nested router
+      Object.assign(flattened, flattenRouter(value as RouterType, fullKey))
+    }
+  }
+
+  return flattened
+}
+
 export const registerIpcMain = (router: RouterType) => {
-  for (const [name, route] of Object.entries(router)) {
+  const flattenedRouter = flattenRouter(router)
+
+  for (const [name, route] of Object.entries(flattenedRouter)) {
     ipcMain.handle(name, (e, payload) => {
       return route.action({ context: { sender: e.sender }, input: payload })
     })
