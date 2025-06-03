@@ -9,16 +9,12 @@
   "files": [
     "dist",
     "types",
-    "/main",
-    "/renderer"
+    "tipc/main/index.d.ts",
+    "tipc/renderer/index.d.ts"
   ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc && tsup tipc/src/main.ts tipc/src/renderer.ts --format esm,cjs",
-    "dev-main": "pnpm build --watch",
-    "dev-types": "tsc --watch",
-    "dev": "run-p dev-main dev-types",
-    "prepublishOnly": "npm run build"
+    "build": "tsc && tsup tipc/src/main.ts tipc/src/renderer.ts --format esm,cjs"
   },
   "exports": {
     "./main": {
