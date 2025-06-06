@@ -26,8 +26,27 @@
       "types": "./tipc/renderer/index.d.ts",
       "require": "./dist/renderer.cjs",
       "default": "./dist/renderer.js"
+    },
+    ".": {
+      "main": "./dist/main.cjs",
+      "module": "./dist/main.js",
+      "types": "./tipc/main/index.d.ts"
+    },
+    "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "main": [
+        "./tipc/main/index.d.ts"
+      ],
+      "renderer": [
+        "./tipc/renderer/index.d.ts"
+      ]
     }
   },
+  "main": "./dist/main.cjs",
+  "module": "./dist/main.js",
+  "types": "./tipc/main/index.d.ts",
   "keywords": [],
   "author": "",
   "license": "ISC",
