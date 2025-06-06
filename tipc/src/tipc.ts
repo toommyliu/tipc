@@ -1,4 +1,4 @@
-import { ActionFunction } from "./types"
+import type { ActionFunction } from "./types"
 
 const createChainFns = <TInput>() => {
   return {

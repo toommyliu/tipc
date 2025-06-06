@@ -10,30 +10,8 @@ import {
 import { tipc } from "./tipc"
 export { tipc }
 
-const flattenRouter = (
-  router: RouterType,
-  prefix = ""
-): Record<string, { action: ActionFunction }> => {
-  const flattened: Record<string, { action: ActionFunction }> = {}
-
-  for (const [key, value] of Object.entries(router)) {
-    const fullKey = prefix ? `${prefix}.${key}` : key
-
-    if (value && typeof value === "object" && "action" in value) {
-      flattened[fullKey] = value as { action: ActionFunction }
-    } else {
-      // Nested router
-      Object.assign(flattened, flattenRouter(value as RouterType, fullKey))
-    }
-  }
-
-  return flattened
-}
-
 export const registerIpcMain = (router: RouterType) => {
-  const flattenedRouter = flattenRouter(router)
-
-  for (const [name, route] of Object.entries(flattenedRouter)) {
+  for (const [name, route] of Object.entries(router)) {
     ipcMain.handle(name, (e, payload) => {
       return route.action({ context: { sender: e.sender }, input: payload })
     })
