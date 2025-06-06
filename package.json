@@ -10,11 +10,13 @@
     "dist",
     "types",
     "tipc/main/index.d.ts",
-    "tipc/renderer/index.d.ts"
+    "tipc/renderer/index.d.ts",
+    "main",
+    "renderer"
   ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc && tsup tipc/src/main.ts tipc/src/renderer.ts --format esm,cjs"
+    "build": "tsc && tsup tipc/src/main.ts tipc/src/renderer.ts --format esm,cjs && node -e \"require('fs').mkdirSync('main', {recursive: true}); require('fs').mkdirSync('renderer', {recursive: true});\""
   },
   "exports": {
     "./main": {
@@ -28,8 +30,8 @@
       "default": "./dist/renderer.js"
     },
     ".": {
-      "main": "./dist/main.cjs",
-      "module": "./dist/main.js",
+      "require": "./dist/main.cjs",
+      "import": "./dist/main.js",
       "types": "./tipc/main/index.d.ts"
     },
     "./package.json": "./package.json"
