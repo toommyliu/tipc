@@ -66,6 +66,7 @@ jobs:
 
           # Add all built files
           git add -A
+          git add -f types/
 
           # Check if there are changes to commit
           if git diff --staged --quiet; then
