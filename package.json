@@ -14,8 +14,7 @@
   ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc && tsup tipc/src/main.ts tipc/src/renderer.ts --format esm,cjs",
-    "postinstall": "npm run build"
+    "build": "tsc && tsup tipc/src/main.ts tipc/src/renderer.ts --format esm,cjs"
   },
   "exports": {
     "./main": {

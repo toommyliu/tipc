@@ -1,0 +1,72 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "lts"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run build
+        run: npm run build
+
+      - name: Deploy to built branch
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          # Configure git
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+          # Create or switch to built branch
+          git checkout -B built
+
+          # Remove everything except build artifacts and essential files
+          find . -maxdepth 1 -not -name '.git' -not -name 'dist' -not -name 'types' -not -name 'tipc' -not -name 'package.json' -not -name 'README.md' -not -name 'LICENSE' -exec rm -rf {} + 2>/dev/null || true
+
+          # Keep only the built files from tipc directory
+          if [ -d "tipc" ]; then
+            # Create temporary directory to store built files
+            mkdir -p temp_tipc/main temp_tipc/renderer
+
+            # Copy only the .d.ts files from tipc
+            if [ -f "tipc/main/index.d.ts" ]; then
+              cp "tipc/main/index.d.ts" "temp_tipc/main/"
+            fi
+            if [ -f "tipc/renderer/index.d.ts" ]; then
+              cp "tipc/renderer/index.d.ts" "temp_tipc/renderer/"
+            fi
+
+            # Remove original tipc directory and replace with cleaned version
+            rm -rf tipc
+            mv temp_tipc tipc
+          fi
+
+          # Add all built files
+          git add -A
+
+          # Check if there are changes to commit
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            # Commit and push
+            git commit -m "Deploy built files from commit ${{ github.sha }}"
+            git push origin built --force
+          fi
