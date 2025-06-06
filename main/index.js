@@ -1,2 +1,2 @@
-// Re-export from the main module
-module.exports = require('../dist/main.cjs');
+// Entrypoint for CommonJS consumers for the main API
+module.exports = require("../dist/main.cjs")

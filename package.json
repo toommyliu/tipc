@@ -10,7 +10,9 @@
     "dist",
     "types",
     "tipc/main/index.d.ts",
-    "tipc/renderer/index.d.ts"
+    "tipc/renderer/index.d.ts",
+    "main",
+    "renderer"
   ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -19,12 +21,12 @@
   "exports": {
     "./main": {
       "types": "./tipc/main/index.d.ts",
-      "require": "./dist/main.cjs",
+      "require": "./main/index.js",
       "import": "./dist/main.js"
     },
     "./renderer": {
       "types": "./tipc/renderer/index.d.ts",
-      "require": "./dist/renderer.cjs",
+      "require": "./renderer/index.js",
       "import": "./dist/renderer.js"
     },
     ".": {

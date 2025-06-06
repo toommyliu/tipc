@@ -1,2 +1,2 @@
-// Re-export from the renderer module
-module.exports = require('../dist/renderer.cjs');
+// Entrypoint for CommonJS consumers for the renderer API
+module.exports = require("../dist/renderer.cjs")

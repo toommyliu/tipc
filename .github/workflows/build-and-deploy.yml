@@ -44,7 +44,8 @@ jobs:
           git checkout -B built
 
           # Remove everything except build artifacts and essential files
-          find . -maxdepth 1 -not -name '.git' -not -name 'dist' -not -name 'types' -not -name 'tipc' -not -name 'package.json' -not -name 'README.md' -not -name 'LICENSE' -exec rm -rf {} + 2>/dev/null || true
+          find . -maxdepth 1 -not -name '.git' -not -name 'dist' -not -name 'types' -not -name 'tipc' -not -name 'main' -not -name 'renderer' -not -name 'package.json' -not -name 'README.md' -not -name 'LICENSE' -exec rm -rf {} + 2>/dev/null || true
+
 
           # Keep only the built files from tipc directory
           if [ -d "tipc" ]; then
