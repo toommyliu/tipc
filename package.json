@@ -18,12 +18,12 @@
   },
   "exports": {
     "./main": {
-      "types": "./main/index.d.ts",
+      "types": "./tipc/main/index.d.ts",
       "require": "./dist/main.cjs",
       "default": "./dist/main.js"
     },
     "./renderer": {
-      "types": "./renderer/index.d.ts",
+      "types": "./tipc/renderer/index.d.ts",
       "require": "./dist/renderer.cjs",
       "default": "./dist/renderer.js"
     }
