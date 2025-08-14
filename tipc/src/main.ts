@@ -1,48 +1,63 @@
 import "@tybys/electron-ipc-handle-invoke/main"
 import { v4 as uuid } from "@lukeed/uuid"
 import { WebContents, ipcMain } from "electron"
-import {
-  RendererHandlers,
-  RendererHandlersCaller,
-  RouterType,
-  ActionFunction,
-} from "./types"
+import { RendererHandlers, RendererHandlersCaller, RouterType } from "./types"
 import { tipc } from "./tipc"
 export { tipc }
 
 export const registerIpcMain = (router: RouterType) => {
-  for (const [name, route] of Object.entries(router)) {
-    ipcMain.handle(name, (e, payload) => {
-      return route.action({ context: { sender: e.sender }, input: payload })
-    })
+  const walk = (obj: RouterType, prefix = "") => {
+    for (const [key, val] of Object.entries(obj)) {
+      const channel = prefix ? `${prefix}.${key}` : key
+      if ("action" in (val as any)) {
+        const route = val as { action: any }
+        ipcMain.handle(channel, (e, payload) => {
+          return route.action({ context: { sender: e.sender }, input: payload })
+        })
+      } else {
+        walk(val as RouterType, channel)
+      }
+    }
   }
+
+  walk(router)
 }
 
 export const getRendererHandlers = <T extends RendererHandlers>(
   contents: WebContents
 ) => {
-  return new Proxy<RendererHandlersCaller<T>>({} as any, {
-    get: (_, prop) => {
-      return {
-        send: (...args: any[]) => contents.send(prop.toString(), ...args),
+  const makeProxy = (prefix = "") =>
+    new Proxy<any>({} as any, {
+      get: (_, prop) => {
+        const name = prop.toString()
+        const channel = prefix ? `${prefix}.${name}` : name
 
-        invoke: async (...args: any[]) => {
-          const id = uuid()
+        return {
+          send: (...args: any[]) => contents.send(channel, ...args),
 
-          return new Promise((resolve, reject) => {
-            ipcMain.once(id, (_, { error, result }) => {
-              if (error) {
-                reject(error)
-              } else {
-                resolve(result)
-              }
+          invoke: async (...args: any[]) => {
+            const id = uuid()
+
+            return new Promise((resolve, reject) => {
+              ipcMain.once(
+                id,
+                (_event: any, payload: { error?: any; result?: any }) => {
+                  const { error, result } = payload || {}
+                  if (error) {
+                    reject(error)
+                  } else {
+                    resolve(result)
+                  }
+                }
+              )
+              contents.send(channel, id, ...args)
             })
-            contents.send(prop.toString(), id, ...args)
-          })
-        },
-      }
-    },
-  })
+          },
+        }
+      },
+    })
+
+  return makeProxy()
 }
 
 export * from "./types"

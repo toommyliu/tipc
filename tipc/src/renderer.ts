@@ -12,15 +12,21 @@ export const createClient = <Router extends RouterType>({
 }: {
   ipcInvoke: IpcRenderer["invoke"]
 }) => {
-  return new Proxy<ClientFromRouter<Router>>({} as any, {
-    get: (_, prop) => {
-      const invoke = (input: any) => {
-        return ipcInvoke(prop.toString(), input)
-      }
+  const makeProxy = (prefix = ""): any =>
+    new Proxy<any>({} as any, {
+      get: (_, prop) => {
+        const name = prop.toString()
+        const channel = prefix ? `${prefix}.${name}` : name
 
-      return invoke
-    },
-  })
+        const invoke = (input: any) => ipcInvoke(channel, input)
+
+        return new Proxy(invoke, {
+          get: () => makeProxy(channel),
+        })
+      },
+    })
+
+  return makeProxy()
 }
 
 export const createEventHandlers = <T extends RendererHandlers>({
@@ -34,23 +40,29 @@ export const createEventHandlers = <T extends RendererHandlers>({
   ) => () => void
 
   send: IpcRenderer["send"]
-}) =>
-  new Proxy<RendererHandlersListener<T>>({} as any, {
-    get: (_, prop) => {
-      return {
-        listen: (handler: any) =>
-          on(prop.toString(), (event, ...args) => handler(...args)),
+}) => {
+  const makeProxy = (prefix = "") =>
+    new Proxy<any>({} as any, {
+      get: (_, prop) => {
+        const name = prop.toString()
+        const channel = prefix ? `${prefix}.${name}` : name
 
-        handle: (handler: any) => {
-          return on(prop.toString(), async (event, id: string, ...args) => {
-            try {
-              const result = await handler(...args)
-              send(id, { result })
-            } catch (error) {
-              send(id, { error })
-            }
-          })
-        },
-      }
-    },
-  })
+        return {
+          listen: (handler: any) =>
+            on(channel, (event, ...args) => handler(...args)),
+
+          handle: (handler: any) =>
+            on(channel, async (event, id: string, ...args) => {
+              try {
+                const result = await handler(...args)
+                send(id, { result })
+              } catch (error) {
+                send(id, { error })
+              }
+            }),
+        }
+      },
+    })
+
+  return makeProxy()
+}
