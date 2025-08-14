@@ -12,21 +12,22 @@ export const createClient = <Router extends RouterType>({
 }: {
   ipcInvoke: IpcRenderer["invoke"]
 }) => {
-  const makeProxy = (prefix = ""): any =>
-    new Proxy<any>({} as any, {
-      get: (_, prop) => {
+  const makeProxy = (prefix = ""): any => {
+    // function target so the proxy is callable at every level
+    const fn = (input: any) => ipcInvoke(prefix, input)
+
+    return new Proxy(fn, {
+      get: (_t, prop) => {
         const name = prop.toString()
         const channel = prefix ? `${prefix}.${name}` : name
-
-        const invoke = (input: any) => ipcInvoke(channel, input)
-
-        return new Proxy(invoke, {
-          get: () => makeProxy(channel),
-        })
+        return makeProxy(channel)
       },
     })
+  }
 
-  return makeProxy()
+  return new Proxy(() => {}, {
+    get: (_, prop) => makeProxy(prop.toString()),
+  })
 }
 
 export const createEventHandlers = <T extends RendererHandlers>({
